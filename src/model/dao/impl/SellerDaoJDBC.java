@@ -40,7 +40,7 @@ public class SellerDaoJDBC implements SellerDao {
 		// TODO Auto-generated method stub
 		
 	}
-
+	
 	@Override
 	public Seller findById(Integer id) {
 		PreparedStatement st = null;
@@ -79,6 +79,52 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 	
 	@Override
+	public List<Seller> findAll() {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		
+		try {
+			st = conn.prepareStatement(
+					"SELECT\r\n" + 
+					"	s.Id,\r\n" + 
+					"	s.Name,\r\n" + 
+					"	s.Email,\r\n" + 
+					"	s.BirthDate,\r\n" + 
+					"	s.BaseSalary,\r\n" + 
+					"	d.Id As DepartmentId,\r\n" + 
+					"	d.Name AS DepartmentName\r\n" + 
+					"FROM seller s \r\n" + 
+					"	INNER JOIN department d\r\n" + 
+					"	ON s.DepartmentId = d.Id\r\n" + 
+					"ORDER BY s.Name");
+						
+			rs = st.executeQuery();
+			
+			List<Seller> sellers = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>();
+			
+			while (rs.next()) {
+				
+				Department dep = map.get(rs.getInt("DepartmentId"));
+				
+				if (dep == null) {
+					dep = instantiateDepartment(rs);
+					map.put(rs.getInt("DepartmentId"), dep);
+				}
+				
+				sellers.add(instantiateSeller(rs, dep));
+			}
+			return sellers;
+			
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
+	}
+	
+	@Override
 	public List<Seller> findByDepartment(Department department) {
 		PreparedStatement st = null;
 		ResultSet rs = null;
@@ -97,7 +143,7 @@ public class SellerDaoJDBC implements SellerDao {
 					"	INNER JOIN department d\r\n" + 
 					"	ON s.DepartmentId = d.Id\r\n" + 
 					"WHERE s.DepartmentId = ?\r\n" + 
-					"ORDER BY Name");
+					"ORDER BY s.Name");
 			
 			st.setInt(1, department.getId());
 			
@@ -143,12 +189,6 @@ public class SellerDaoJDBC implements SellerDao {
 		department.setId(rs.getInt("DepartmentId"));
 		department.setName(rs.getString("DepartmentName"));
 		return department;
-	}
-
-	@Override
-	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }
