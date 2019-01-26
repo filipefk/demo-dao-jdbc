@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +20,8 @@ public class SellerDaoJDBC implements SellerDao {
 	
 	private Connection conn;
 	
-	public SellerDaoJDBC(Connection conn) {
-		this.conn = conn;
+	public SellerDaoJDBC(Connection connection) {
+		this.conn = connection;
 	}
 	
 	@Override
@@ -40,7 +39,7 @@ public class SellerDaoJDBC implements SellerDao {
 					"VALUES(?, ?, ?, ?, ?)",
 					Statement.RETURN_GENERATED_KEYS);
 			
-			st.setString(1,  seller.getName());
+			st.setString(1, seller.getName());
 			st.setString(2, seller.getEmail());
 			st.setDate(3, new java.sql.Date(seller.getBirthDate().getTime()));
 			st.setDouble(4,  seller.getBaseSalary());
